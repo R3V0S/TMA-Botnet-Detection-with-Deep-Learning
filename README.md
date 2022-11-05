@@ -9,9 +9,9 @@ Steps:
 
 Once Python has been installed correctly, then:
   1) _git clone <this_repo_by_using_SSH_or_HTTPS>_
-  2) Create a new venv with: _python -m venv 1DCNN_v01.00_
+  2) Create a new venv (in the folder 1DCNN) with: _python -m venv 1DCNN_v01.00_
   3) Go to 1DCNN_v01.00 folder -> Scripts folder -> and execute in the terminal _activate_. Once this will be completed, you will be working in a virtual environment.
-  4) Install the requirements.txt when the virtual environment has been initiated: _pip install -r requirements.txt_
+  4) Install the requirements.txt when the virtual environment has already been initiated: _pip install -r requirements.txt_
   5) Return to the \TMA-Botnet-Detection-with-Deep-Learning\1DCNN Code and execute in the command line: _jupyter notebook_
   6) Wait. Then a browser web page will open, and shows the jupyter environment. Select "New" at the top right of the window, and select "1DCNN_v01.00" as Kernel.
 
