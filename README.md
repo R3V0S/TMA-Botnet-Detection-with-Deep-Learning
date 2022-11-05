@@ -13,3 +13,10 @@ Steps:
   6) Wait. Then a browser web page will open, and shows the jupyter environment. Select "New" at the top right of the window, and select "1DCNN_v01.00" as Kernel.
 
 Let's code!
+
+For every new push:
+  - _git add <only_the_script_file_updated> <requirements_updated>_
+  - _git commit -m "Changes applied... Specify"_
+  - _git push_
+
+Will be needed to reinstall the requirements if someone else has added more python packages!
