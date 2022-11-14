@@ -1,4 +1,5 @@
 Done:
+	
 	- Dropped unnecessary columns:
 		- StartTime
 		- DstAddr
@@ -13,6 +14,7 @@ Done:
 		- Error --> Sport and Dport are dropped --> wrong information --> MUST BE CHECKED
 		
 To Do:
+
 	- Check ports problem
 	- Check what are States
 		- we need to keep it?
