@@ -13,7 +13,7 @@ Once Python has been installed correctly, then:
   3) Go to 1DCNN_v01.00 folder -> Scripts folder -> and execute in the terminal _activate_. Once this will be completed, you will be working in a virtual environment.
   4) Install the requirements.txt when the virtual environment has already been initiated: _pip install -r requirements.txt_
   5) Return to the \TMA-Botnet-Detection-with-Deep-Learning\1DCNN Code and execute in the command line: _jupyter notebook_
-  6) Wait. Then a browser web page will open, and shows the jupyter environment. Select "New" at the top right of the window, and select "1DCNN_v01.00" as Kernel.
+  6) Wait. Then a browser web page will open, and shows the jupyter environment. Select "1DCC Stabdard Version.ipynb" and start coding.
 
 Let's code!
 
@@ -22,6 +22,6 @@ For every new push:
   - _git commit -m "Changes applied... Specify"_
   - _git push_
   
-*To create a new requirements.txt : _pip3 freeze > requirements.txt_
+*To create a new requirements.txt : _pip freeze > requirements.txt_
 
 Will be needed to reinstall the requirements if someone else has added more python packages!
