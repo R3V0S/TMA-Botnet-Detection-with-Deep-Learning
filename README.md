@@ -21,5 +21,7 @@ For every new push:
   - _git add <only_the_script_file_updated> <requirements_updated>_
   - _git commit -m "Changes applied... Specify"_
   - _git push_
+  
+*To create a new requirements.txt : _pip3 freeze > requirements.txt_
 
 Will be needed to reinstall the requirements if someone else has added more python packages!
