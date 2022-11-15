@@ -18,7 +18,7 @@ Once Python has been installed correctly, then:
 Let's code!
 
 For every new push:
-  - _git add <only_the_script_file_updated> <requirements_updated>_
+  - _git add <only_the_script_file_updated:1DCNN_botnet_detection_v01.00.ipynb> <requirements_updated:requirements.txt>_
   - _git commit -m "Changes applied... Specify"_
   - _git push_
   
