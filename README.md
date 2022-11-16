@@ -25,3 +25,6 @@ For every new push:
 *To create a new requirements.txt : _pip freeze > requirements.txt_
 
 Will be needed to reinstall the requirements if someone else has added more python packages!
+
+TYPICAL ERRORS:
+ When you are doing a push -> "LF will be replaced by CRLF" for each doc added or changed, please, do before the push the next: _git config --global core.autocrlf false_
