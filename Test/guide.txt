@@ -1,0 +1,3 @@
+The ANN (MLP) is trained with KDD and CTU. With the KDD is working properly. With the CTU there is a problem with the shapes during the training.
+
+For the 1DCNN, this is not working for the KDD and the CTU traceset. For the KDD traceset, there is a problem with the first layer of the CNN (Embedding layer) and more concretely with the param input_dim. With the CTU there is the same problem of the ANN (MLP)... the shapes.
