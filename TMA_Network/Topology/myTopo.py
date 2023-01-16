@@ -32,9 +32,9 @@ class MyTopo(Topo):
         self.addLink(s2, server2, port1=5)
         self.addLink(s2, server3, port1=6)
 
-        # Add links switches
+        # Add links switches                       
         self.addLink(s1, s2, port1=1, port2=1)
-        self.addLink(s2, s3, port1=2, port2=1)
+        self.addLink(s1, s3, port1=2, port2=1)
 
 
 # Adding the 'topos' dict 
