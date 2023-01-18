@@ -37,55 +37,39 @@ def query(client, init, final):
 	# points = results.get_points()
 	return df
 
+
+# time               *Dur      *Proto *TotBytes *TotPkts datapath ipv4-dst   ipv4-src
+# ----                ---       ----- --------   ------- -------- --------   --------
+#								1 - ICMP
+#								6 - TCP
 	
-def checkBots(df):
+# def checkBots(df):
 	# Check if there is a DoS Attack to the network
 	
     # pints.shape() = 80 x N   (resize (1, 80, N))
     # model.predict(points)
     # result
     # if botnet = true --> send request to RYU.
-        
+
+	# model.predict(df)    
     
-    # global list_clients
+    # DO ACTIONS TO BLOCK CLIENT
+	# myobj = {'nw_src': ip_client+'/32', 'actions':'DENY', 'dl_type':'IPv4', 'priority':'10'}
+	# x = requests.post(urlFirewall, json=myobj)
+	# list_ddos_attackers.append(ip_client)
 
-	# for point in points:
-	# 	#print(point)
-	# 	if int(point['datapath']) == 2: 
-	# 		ip_client = point['ipv4-src']
-	# 		packets_client = int(point['packets'])
-			
-	# 		if ip_client in list_clients:
-	# 			antPackets = list_clients.get(ip_client)
-	# 			# print("Packets sent client:", packets_client)
-	# 			# print("Before packets in DB:", antPackets)
-	# 			if (packets_client - antPackets > 2000) and ip_client not in list_ddos_attackers:
-	# 				print("DoS Attack by ", ip_client)
-	# 				# DO ACTIONS TO BLOCK CLIENT
-	# 				myobj = {'nw_src': ip_client+'/32', 'actions':'DENY', 'dl_type':'IPv4', 'priority':'10'}
-	# 				x = requests.post(urlFirewall, json=myobj)
-	# 				list_ddos_attackers.append(ip_client)
-
-	# 			list_clients[ip_client] = packets_client
-	# 		else:	
-	# 			print("Adding new client...")
-	# 			list_clients[ip_client] = packets_client
-
-					
-	# print('LIST CLIENTS: ', list_clients)
-	# print()
 
 def detectBots():
 	client = connectDB()
-    init = 0
+    segment = 0
     num_flows = 80
 	while True:
-		df = query(client, init, init + num_flows)
+		df = query(client, segment, segment + num_flows)
+		if (df.row = 80):
+        	segment+=40
 		checkBots(df)
 		sleep(2)
-        segment+=40
 
 if __name__ == '__main__':
-
     detectBots()
 		

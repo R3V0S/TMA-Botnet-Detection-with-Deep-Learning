@@ -21,6 +21,7 @@ import datetime
 import socket
 
 from operator import attrgetter
+from ryu.app import simple_switch_13
 from ryu.app.wsgi import ControllerBase
 from ryu.app.wsgi import Response
 from ryu.app.wsgi import WSGIApplication
@@ -47,6 +48,9 @@ from ryu.lib.packet import ethernet
 from ryu.app.wsgi import route
 from netaddr import IPAddress
 from ryu.lib import hub
+from ryu.lib.packet import ipv4
+from ryu.lib.packet import ipv6
+from ryu.lib.packet import arp
 
 
 
@@ -246,6 +250,7 @@ class RestFirewallAPI(app_manager.RyuApp):
         self.datapaths = {}
         self.monitor_thread = hub.spawn(self._monitor)
         self.mac_to_port = {}
+        self.simpleSwitch = simple_switch_13.SimpleSwitch13(self, *args, **kwargs)
 
         mapper = wsgi.mapper
         wsgi.registory['FirewallController'] = self.data
@@ -346,15 +351,19 @@ class RestFirewallAPI(app_manager.RyuApp):
         del self.waiters[dp.id][msg.xid]
         lock.set()
 
-    def add_controller_flow(self, datapath, priority, match, actions):
+    def add_controller_flow(self, datapath, priority, match, actions, buffer_id=None):
         ofproto = datapath.ofproto
         parser = datapath.ofproto_parser
 
-        # construct flow_mod message and send it.
         inst = [parser.OFPInstructionActions(ofproto.OFPIT_APPLY_ACTIONS,
                                              actions)]
-        mod = parser.OFPFlowMod(datapath=datapath, priority=priority,
-                                match=match, instructions=inst)
+        if buffer_id:
+            mod = parser.OFPFlowMod(datapath=datapath, buffer_id=buffer_id,
+                                    priority=priority, match=match,
+                                    instructions=inst)
+        else:
+            mod = parser.OFPFlowMod(datapath=datapath, priority=priority,
+                                    match=match, instructions=inst)
         datapath.send_msg(mod)
 
     def discover_and_add_flows_to_switch(self, ev):
@@ -376,11 +385,11 @@ class RestFirewallAPI(app_manager.RyuApp):
         # get the received port number from packet_in message.
         in_port = msg.match['in_port']
 
-        self.logger.debug("**************** PACKET IN ****************")
-        self.logger.debug("    -----> DPID: %s", dpid)
-        self.logger.debug("    -----> SRC_MAC: %s", src)
-        self.logger.debug("    -----> DST_MAC: %s", dst)
-        self.logger.debug("    -----> IN_PORT: %s", in_port)
+        # self.logger.debug("**************** PACKET IN ****************")
+        # self.logger.debug("    -----> DPID: %s", dpid)
+        # self.logger.debug("    -----> SRC_MAC: %s", src)
+        # self.logger.debug("    -----> DST_MAC: %s", dst)
+        # self.logger.debug("    -----> IN_PORT: %s", in_port)
 
         # learn a mac address to avoid FLOOD next time.
         self.mac_to_port[dpid][src] = in_port
@@ -392,33 +401,65 @@ class RestFirewallAPI(app_manager.RyuApp):
         else:
             out_port = ofproto.OFPP_FLOOD
 
-        self.logger.debug("**************** PACKET DECISION ****************")
-        self.logger.debug("    -----> OUT_PORT: %s", out_port)
+        # self.logger.debug("**************** PACKET DECISION ****************")
+        # self.logger.debug("    -----> OUT_PORT: %s", out_port)
 
         # construct action list.
         actions = [parser.OFPActionOutput(out_port)]
 
         # install a flow to avoid packet_in next time.
         if out_port != ofproto.OFPP_FLOOD:
-            match = parser.OFPMatch(in_port=in_port, eth_dst=dst)
-            self.add_controller_flow(datapath, 1, match, actions)
-            self.logger.debug("    -----> ADDING FLOW")
+            match = parser.OFPMatch(in_port=in_port, eth_dst=dst, eth_src=src)
+
+            if msg.buffer_id != ofproto.OFP_NO_BUFFER:
+                self.simpleSwitch.add_flow(datapath, 1, match, actions, msg.buffer_id)
+                return
+            else:
+                self.simpleSwitch.add_flow(datapath, 1, match, actions)
+            # self.logger.debug("    -----> ADDING FLOW")
+
+        if eth_pkt.ethertype == ether.ETH_TYPE_IP:
+            ip_header = pkt.get_protocol(ipv4.ipv4)
+            match = parser.OFPMatch(in_port=in_port, eth_type=ether.ETH_TYPE_IP, ip_proto=ip_header.proto,
+                                ipv4_src= ip_header.src, ipv4_dst=ip_header.dst)
+            actions = [parser.OFPActionOutput(out_port)]
+            self.simpleSwitch.add_flow(datapath, 20, match, actions)
+            self.logger.info("IPV4 TCP packet handled: " + ip_header.src + " - " + ip_header.dst)
+
+        elif eth_pkt.ethertype == ether.ETH_TYPE_IPV6:
+            ip_header = pkt.get_protocol(ipv6.ipv6)
+            match = parser.OFPMatch(in_port=in_port, eth_type=ether.ETH_TYPE_IPV6, ip_proto=ip_header.proto,
+                                ipv4_src= ip_header.src, ipv4_dst=ip_header.dst)
+            actions = [parser.OFPActionOutput(out_port)]
+            self.simpleSwitch.add_flow(datapath, 20, match, actions)
+            self.logger.info("IPV6 TCP packet handled: " + ip_header.src + " - " + ip_header.dst)
+
+
+        data = None
+        if msg.buffer_id == ofproto.OFP_NO_BUFFER:
+            data = msg.data
 
         # construct packet_out message and send it.
         out = parser.OFPPacketOut(datapath=datapath,
-                                  buffer_id=ofproto.OFP_NO_BUFFER,
-                                  in_port=in_port, actions=actions,
-                                  data=msg.data)
+                                  buffer_id=msg.buffer_id,
+                                  in_port=in_port,
+                                  actions=actions,
+                                  data=data)
+        # out = parser.OFPPacketOut(datapath=datapath,
+        #                           buffer_id=ofproto.OFP_NO_BUFFER,
+        #                           in_port=in_port, actions=actions,
+        #                           data=msg.data)
         datapath.send_msg(out)
 
     def _monitor(self):
+        self.logger.debug('INIT HUB STATS')
         while True:
             for dp in self.datapaths.values():
                 self._request_stats(dp)
             hub.sleep(5)
 
     def _request_stats(self, datapath):
-        self.logger.debug('send stats request: %016x', datapath.id)
+        # self.logger.debug('send stats request: %016x', datapath.id)
         ofproto = datapath.ofproto
         parser = datapath.ofproto_parser
 
@@ -434,7 +475,7 @@ class RestFirewallAPI(app_manager.RyuApp):
         if ev.enter:
             # Register Datapath to monitor
             if datapath.id not in self.datapaths:
-                self.logger.debug('register datapath: %016x', datapath.id)
+                # self.logger.debug('register datapath: %016x', datapath.id)
                 self.datapaths[datapath.id] = datapath
             #print(ev.dp.id)
             if datapath.id == 1:
@@ -448,11 +489,11 @@ class RestFirewallAPI(app_manager.RyuApp):
                 actions = [parser.OFPActionOutput(ofproto.OFPP_CONTROLLER,
                                                 ofproto.OFPCML_NO_BUFFER)]
                 self.add_controller_flow(datapath, 0, match, actions)
-                FirewallController._LOGGER.info("Added default controller rule to switch: %d", datapath.id)
+                # FirewallController._LOGGER.info("Added default controller rule to switch: %d", datapath.id)
         else:
             # Stop monitorin exiting Datapath
             if datapath.id in self.datapaths:
-                self.logger.debug('unregister datapath: %016x', datapath.id)
+                # self.logger.debug('unregister datapath: %016x', datapath.id)
                 del self.datapaths[datapath.id]
             
             FirewallController.unregist_ofs(ev.dp)
@@ -464,10 +505,14 @@ class RestFirewallAPI(app_manager.RyuApp):
         pkt = packet.Packet(ev.msg.data)
         eth = pkt.get_protocols(ethernet.ethernet)[0]
 
+        self.logger.debug('PACKET IN DETECTED------------------------------------------')
+
         if eth.ethertype != ether.ETH_TYPE_IPV6:
             if dpid == DPID_SWITCH1:
+                self.logger.debug('PACKET IN FW DETECTED------------------------------------------')
                 FirewallController.packet_in_handler(ev.msg)
             else:
+                self.logger.debug('PACKET IN SWITCH DETECTED------------------------------------------')
                 self.discover_and_add_flows_to_switch(ev)
         else:
             return
@@ -478,9 +523,9 @@ class RestFirewallAPI(app_manager.RyuApp):
         FLOW_MSG = "flows,datapath=%x Dur=%d,TotPkts=%d,TotBytes=%d,Proto=\"%s\",ipv4-src=\"%s\",ipv4-dst=\"%s\" %d"
 
         body = ev.msg.body
-        self.logger.debug('FLOW stats received: %016x', ev.msg.datapath.id)
+        # self.logger.debug('FLOW stats received: %016x', ev.msg.datapath.id)
         # We only take ipv4 flows.
-        for stat in body:
+        for stat in [flow for flow in body if ('ip_proto' in flow.match and ('ipv4_dst' in flow.match or 'ipv4_src' in flow.match) )]:
             timestamp = int(datetime.datetime.now().timestamp() * 1000000000)
 
             Dur = stat.duration_nsec
@@ -501,10 +546,10 @@ class RestFirewallAPI(app_manager.RyuApp):
 
             msg = FLOW_MSG % (ev.msg.datapath.id, Dur, TotPkts, TotBytes, Proto, ipv4_src, ipv4_dst, timestamp)
             
-            self.logger.info(msg)
+            # self.logger.info(msg)
             sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             bytesSent = sock.sendto(msg.encode(), (UDP_IP, UDP_PORT))
-            FirewallController._LOGGER.debug("SENT %d Bytes to Influx, IP: %s, Port: %s\n" % (bytesSent, UDP_IP, UDP_PORT))
+            # FirewallController._LOGGER.debug("SENT %d Bytes to Influx, IP: %s, Port: %s\n" % (bytesSent, UDP_IP, UDP_PORT))
 
     @set_ev_cls(ofp_event.EventOFPPortStatsReply, MAIN_DISPATCHER)
     def _port_stats_reply_handler(self, ev):
@@ -582,15 +627,15 @@ class FirewallController(ControllerBase):
         f_ofs.set_disable_flow()
         f_ofs.set_arp_flow()
         f_ofs.set_log_enable()
-        FirewallController._LOGGER.info('dpid=%s: Join as firewall.',
-                                        dpid_str)
+        # FirewallController._LOGGER.info('dpid=%s: Join as firewall.',
+        #                                  dpid_str)
 
     @staticmethod
     def unregist_ofs(dp):
         if dp.id in FirewallController._OFS_LIST:
             del FirewallController._OFS_LIST[dp.id]
-            FirewallController._LOGGER.info('dpid=%s: Leave firewall.',
-                                            dpid_lib.dpid_to_str(dp.id))
+            # FirewallController._LOGGER.info('dpid=%s: Leave firewall.',
+            #                                 dpid_lib.dpid_to_str(dp.id))
 
     # GET /firewall/module/status
     def get_status(self, req, **_kwargs):

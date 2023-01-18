@@ -17,9 +17,9 @@ class MyTopo(Topo):
         server3 = self.addHost('server3', ip='10.0.0.102/24', mac='00:00:00:00:01:02')
 
         # Add switches
-        s1 = self.addSwitch('s1', dpid="0000000000000001")
-        s2 = self.addSwitch('s2', dpid="0000000000000002")
-        s3 = self.addSwitch('s3', dpid="0000000000000003")
+        s1 = self.addSwitch('r1', dpid="0000000000000001")
+        s2 = self.addSwitch('s1', dpid="0000000000000002")
+        s3 = self.addSwitch('s2', dpid="0000000000000003")
 
         # Add links hosts
         self.addLink(s3, h1, port1=2)
