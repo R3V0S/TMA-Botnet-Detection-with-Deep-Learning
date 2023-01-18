@@ -57,7 +57,6 @@ And run the following commands to create the setup:
 - Modify the file at ~/ryu/ryu/app/simple_switch_rest_13.py:
   -  Replace line 88 and 102 for the following line:
   -  dpid = dpid_lib.str_to_dpid(kwargs['dpid'])
-- Run the following commands to configure the firewall in the switch r1:
 
 - Download influxdb package: _wget https://dl.influxdata.com/influxdb/releases/influxdb_1.8.4_amd64.deb_
 - Extract the package: _sudo dpkg -i influxdb_1.8.4_amd64.deb_
