@@ -67,7 +67,7 @@ def detectBots():
     while True:
         df = query(client, segment, segment + num_flows)
         cleanDf(df)
-        checkBots(df)
+        # checkBots(df)
         if df.row == 80:
             segment += 40
         sleep(2)
