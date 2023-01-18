@@ -40,31 +40,31 @@ Install requirements:
 
 And run the following commands to create the setup:
 
-- _sudo apt-get install build-essential
-- _sudo apt-get install mininet
-- _sudo apt install xterm
-- _echo 'xterm*font: *-fixed-*-*-*-18-*' > .Xresources
-- _xrdb -merge ~/.Xresources
-- _sudo apt install git
-- _git clone https://github.com/mininet/mininet.git
-- _mininet/util/install.sh -fw
-- _git clone https://github.com/osrg/ryu.git
+- Install build-essential: _sudo apt-get install build-essential
+- Install Mininet: _sudo apt-get install mininet
+- Install Xterm: _sudo apt install xterm
+- Create resource package for Xterm: _echo 'xterm*font: *-fixed-*-*-*-18-*' > .Xresources
+- Set the resource to Xterm: _xrdb -merge ~/.Xresources
+- Install git: _sudo apt install git
+- Clone mininet repository: _git clone https://github.com/mininet/mininet.git
+- Run installation script: _mininet/util/install.sh -fw
+- Clone Ryu repository: _git clone https://github.com/osrg/ryu.git
 - _cd ryu
-- _sudo pip3 install ryu
-- _sudo pip3 uninstall eventlet
-- _sudo pip3 install eventlet==0.30.2
-- _sudo apt install curl
+- Install Ryu: _sudo pip3 install ryu
+- Uninstall eventlet due to some issues: _sudo pip3 uninstall eventlet
+- Install specific version of eventlet: _sudo pip3 install eventlet==0.30.2
+- Install curl: _sudo apt install curl
 - Modify the file at ~/ryu/ryu/app/simple_switch_rest_13.py:
   -  Replace line 88 and 102 for the following line:
   -  dpid = dpid_lib.str_to_dpid(kwargs['dpid'])
 - Run the following commands to configure the firewall in the switch r1:
 
-- _wget https://dl.influxdata.com/influxdb/releases/influxdb_1.8.4_amd64.deb
-- _sudo dpkg -i influxdb_1.8.4_amd64.deb
-- _sudo apt-get update
-- _sudo apt-get install -yq python3-influxdb
-- _wget https://dl.influxdata.com/telegraf/releases/telegraf_1.17.3-1_amd64.deb
-- _sudo dpkg -i telegraf_1.17.3-1_amd64.deb
+- Download influxdb package: _wget https://dl.influxdata.com/influxdb/releases/influxdb_1.8.4_amd64.deb
+- Extract the package: _sudo dpkg -i influxdb_1.8.4_amd64.deb
+- Update the local repositories: _sudo apt-get update
+- Install influxdb: _sudo apt-get install -yq python3-influxdb
+- Download telegraf package: _wget https://dl.influxdata.com/telegraf/releases/telegraf_1.17.3-1_amd64.deb
+- Extract the telegraf package: _sudo dpkg -i telegraf_1.17.3-1_amd64.deb
 - Modify the telegraf configuration file in /etc/telegraf/telegraf.conf as following:
   - omit_hostname = true
   - inside [[outputs.influxdb]] section:
@@ -75,8 +75,8 @@ And run the following commands to create the setup:
   - inside [[inputs.socket_listener]] section:
     - service_address = "udp://:8094"
     - data_format = "influx"
-- _sudo systemctl restart telegraf
-- _sudo systemctl start influxdb
+- Restart telegraf system: _sudo systemctl restart telegraf
+- Restart influxdb system: _sudo systemctl restart influxdb
 
 If needed at some point you can flush the topology of mininet by running: 
   _sudo mn -c
