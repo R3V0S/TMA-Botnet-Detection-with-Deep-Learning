@@ -40,31 +40,31 @@ Install requirements:
 
 And run the following commands to create the setup:
 
-- Install build-essential: _sudo apt-get install build-essential
-- Install Mininet: _sudo apt-get install mininet
-- Install Xterm: _sudo apt install xterm
-- Create resource package for Xterm: _echo 'xterm*font: *-fixed-*-*-*-18-*' > .Xresources
-- Set the resource to Xterm: _xrdb -merge ~/.Xresources
-- Install git: _sudo apt install git
-- Clone mininet repository: _git clone https://github.com/mininet/mininet.git
-- Run installation script: _mininet/util/install.sh -fw
-- Clone Ryu repository: _git clone https://github.com/osrg/ryu.git
-- _cd ryu
-- Install Ryu: _sudo pip3 install ryu
-- Uninstall eventlet due to some issues: _sudo pip3 uninstall eventlet
-- Install specific version of eventlet: _sudo pip3 install eventlet==0.30.2
-- Install curl: _sudo apt install curl
+- Install build-essential: _sudo apt-get install build-essential_
+- Install Mininet: _sudo apt-get install mininet_
+- Install Xterm: _sudo apt install xterm_
+- Create resource package for Xterm: _echo 'xterm*font: *-fixed-*-*-*-18-*' > .Xresources_
+- Set the resource to Xterm: _xrdb -merge ~/.Xresources_
+- Install git: _sudo apt install git_
+- Clone mininet repository: _git clone https://github.com/mininet/mininet.git_
+- Run installation script: _mininet/util/install.sh -fw_
+- Clone Ryu repository: _git clone https://github.com/osrg/ryu.git_
+- _cd ryu_
+- Install Ryu: _sudo pip3 install ryu_
+- Uninstall eventlet due to some issues: _sudo pip3 uninstall eventlet_
+- Install specific version of eventlet: _sudo pip3 install eventlet==0.30.2_
+- Install curl: _sudo apt install curl_
 - Modify the file at ~/ryu/ryu/app/simple_switch_rest_13.py:
   -  Replace line 88 and 102 for the following line:
   -  dpid = dpid_lib.str_to_dpid(kwargs['dpid'])
 - Run the following commands to configure the firewall in the switch r1:
 
-- Download influxdb package: _wget https://dl.influxdata.com/influxdb/releases/influxdb_1.8.4_amd64.deb
-- Extract the package: _sudo dpkg -i influxdb_1.8.4_amd64.deb
-- Update the local repositories: _sudo apt-get update
-- Install influxdb: _sudo apt-get install -yq python3-influxdb
-- Download telegraf package: _wget https://dl.influxdata.com/telegraf/releases/telegraf_1.17.3-1_amd64.deb
-- Extract the telegraf package: _sudo dpkg -i telegraf_1.17.3-1_amd64.deb
+- Download influxdb package: _wget https://dl.influxdata.com/influxdb/releases/influxdb_1.8.4_amd64.deb_
+- Extract the package: _sudo dpkg -i influxdb_1.8.4_amd64.deb_
+- Update the local repositories: _sudo apt-get update_
+- Install influxdb: _sudo apt-get install -yq python3-influxdb_
+- Download telegraf package: _wget https://dl.influxdata.com/telegraf/releases/telegraf_1.17.3-1_amd64.deb_
+- Extract the telegraf package: _sudo dpkg -i telegraf_1.17.3-1_amd64.deb_
 - Modify the telegraf configuration file in /etc/telegraf/telegraf.conf as following:
   - omit_hostname = true
   - inside [[outputs.influxdb]] section:
@@ -75,27 +75,27 @@ And run the following commands to create the setup:
   - inside [[inputs.socket_listener]] section:
     - service_address = "udp://:8094"
     - data_format = "influx"
-- Restart telegraf system: _sudo systemctl restart telegraf
-- Restart influxdb system: _sudo systemctl restart influxdb
+- Restart telegraf system: _sudo systemctl restart telegraf_
+- Restart influxdb system: _sudo systemctl restart influxdb_
 
 If needed at some point you can flush the topology of mininet by running: 
-  _sudo mn -c
+  _sudo mn -c_
 
 Now you have configured all the needed services.
 
 ### General Steps
 
-- Run the Ryu Firewall: _sudo ryu-manager rest_controller.py
-- Run the Mininet Topology: _sudo mn --custom Topology/myTopo.py --topo mytopo --switch ovsk --controller remote
-- Set the initial configuration: _sh initialConfig.sh
-- Command to show the flow tables in each switch: _sh Topology/switchFlowRules.sh
-- Run the app: _sudo python3 App/ManagerApp.py
+- Run the Ryu Firewall: _sudo ryu-manager rest_controller.py_
+- Run the Mininet Topology: _sudo mn --custom Topology/myTopo.py --topo mytopo --switch ovsk --controller remote_
+- Set the initial configuration: _sh initialConfig.sh_
+- Command to show the flow tables in each switch: _sh Topology/switchFlowRules.sh_
+- Run the app: _sudo python3 App/ManagerApp.py_
 
 ### Attack
 
-- Run the Mininet servers: _mininet> xterm server1 server2 server3
-- In each server run the following command in xterm: _python3 -m http.server 80
-- Run attackers' terminals: _xterm a1 a2
+- Run the Mininet servers: _mininet> xterm server1 server2 server3_
+- In each server run the following command in xterm: _python3 -m http.server 80_
+- Run attackers' terminals: _xterm a1 a2_
 - Then you can run the script _dos.py_ to do the attack from an attacker to the server
  
 ## License
