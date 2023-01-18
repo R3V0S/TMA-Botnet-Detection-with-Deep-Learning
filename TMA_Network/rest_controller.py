@@ -425,15 +425,13 @@ class RestFirewallAPI(app_manager.RyuApp):
             actions = [parser.OFPActionOutput(out_port)]
             self.simpleSwitch.add_flow(datapath, 20, match, actions)
             self.logger.info("IPV4 TCP packet handled: " + ip_header.src + " - " + ip_header.dst)
-
-        elif eth_pkt.ethertype == ether.ETH_TYPE_IPV6:
-            ip_header = pkt.get_protocol(ipv6.ipv6)
-            match = parser.OFPMatch(in_port=in_port, eth_type=ether.ETH_TYPE_IPV6, ip_proto=ip_header.proto,
-                                ipv4_src= ip_header.src, ipv4_dst=ip_header.dst)
-            actions = [parser.OFPActionOutput(out_port)]
+            match = parser.OFPMatch(in_port=out_port, eth_type=ether.ETH_TYPE_IP,
+                                ip_proto=ip_header.proto,
+                                ipv4_src=ip_header.dst,
+                                ipv4_dst=ip_header.src)
+            actions = [parser.OFPActionOutput(in_port)]
             self.simpleSwitch.add_flow(datapath, 20, match, actions)
-            self.logger.info("IPV6 TCP packet handled: " + ip_header.src + " - " + ip_header.dst)
-
+            self.logger.info("IPV4 TCP packet return: " + ip_header.src + " - " + ip_header.dst)
 
         data = None
         if msg.buffer_id == ofproto.OFP_NO_BUFFER:
@@ -525,7 +523,7 @@ class RestFirewallAPI(app_manager.RyuApp):
         body = ev.msg.body
         # self.logger.debug('FLOW stats received: %016x', ev.msg.datapath.id)
         # We only take ipv4 flows.
-        for stat in [flow for flow in body if ('ip_proto' in flow.match and ('ipv4_dst' in flow.match or 'ipv4_src' in flow.match) )]:
+        for stat in [flow for flow in body if ('ipv4_dst' in flow.match or 'ipv4_src' in flow.match)]:
             timestamp = int(datetime.datetime.now().timestamp() * 1000000000)
 
             Dur = stat.duration_nsec
