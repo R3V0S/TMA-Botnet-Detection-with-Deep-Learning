@@ -28,3 +28,7 @@ Will be needed to reinstall the requirements if someone else has added more pyth
 
 TYPICAL ERRORS:
  When you are doing a push -> "LF will be replaced by CRLF" for each doc added or changed, please, do before the push the next: _git config --global core.autocrlf false_
+ 
+## License
+
+[Apache License 2.0](https://choosealicense.com/licenses/apache-2.0/)
