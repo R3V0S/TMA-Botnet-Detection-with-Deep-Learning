@@ -523,7 +523,7 @@ class RestFirewallAPI(app_manager.RyuApp):
         body = ev.msg.body
         # self.logger.debug('FLOW stats received: %016x', ev.msg.datapath.id)
         # We only take ipv4 flows.
-        for stat in [flow for flow in body if ('ipv4_dst' in flow.match or 'ipv4_src' in flow.match)]:
+        for stat in [flow for flow in body if ('ip_proto' in flow.match and ('ipv4_dst' in flow.match or 'ipv4_src' in flow.match) )]:
             timestamp = int(datetime.datetime.now().timestamp() * 1000000000)
 
             Dur = stat.duration_nsec
