@@ -42,6 +42,7 @@ def create_segments_and_labels(df):
 def connectDB():
     print('CONNECTING TO DB...')
     client = InfluxDBClient(host = 'localhost', port=8086)
+    print('CONNECTED')
     return client
 
 
@@ -73,14 +74,14 @@ def formatDataFrame(df):
     return reshapedDF
 
 def checkBots(df):
-    model = load_model(os.getcwd() + '/modelo2/modelo2test.h5')
+    model = load_model(os.getcwd() + '/model2/model2test.h5')
     # print(model.summary())
     predictions = model.predict(df)
     # print(predictions)
     if (predictions[0][0] == 1.0):
         print('BACKGROUND')
     if (predictions[0][1] == 1.0):
-        print('BOTNET')
+        print('BOTS')
         myobj = {'nw_dst': '10.0.0.100/32', 'actions': 'DENY', 'dl_type': 'IPv4', 'priority': '10'}
         x = requests.post(urlFirewall, json=myobj)
         myobj = {'nw_dst': '10.0.0.101/32', 'actions': 'DENY', 'dl_type': 'IPv4', 'priority': '10'}
